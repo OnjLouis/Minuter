@@ -42,3 +42,10 @@ If you replace those files inside the add-on package, your custom sounds will be
 
 </body>
 </html>
+
+## Install
+
+1. Download the `.nvda-addon` file from the Releases page.
+2. In NVDA, open the Add-on Manager and choose Install.
+3. Select the `.nvda-addon` file and restart NVDA when prompted.
+
