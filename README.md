@@ -1,51 +1,43 @@
-﻿<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Minuter - NVDA add-on help</title>
-</head>
-<body>
-<h1>Minuter</h1>
+﻿# Minuter
 
-<p>
-Minuter provides optional time cues while you work:
-a tick each second, low beeps on each second, a minute chime,
-end-of-minute beeps, and (optionally) spoken seconds.
-All features are controlled from a single settings dialog.
-</p>
+Minuter provides optional time cues while you work: second ticks/beeps, minute chime, end-of-minute beeps, and optional spoken seconds.
 
-<h2>Open Minuter settings</h2>
-<ul>
-  <li><kbd>NVDA</kbd>+<kbd>Windows</kbd>+<kbd>Backspace</kbd>: Open the Minuter settings dialog.</li>
-</ul>
+## Quick Start
 
-<h2>Settings</h2>
-<ul>
-  <li><strong>Tick each second</strong>: plays a short tick sound every second.</li>
-  <li><strong>Low beep each second</strong>: a subtle low beep each second.</li>
-  <li><strong>Ding each minute</strong>: plays a chime at the start of each minute.</li>
-  <li><strong>Beep at end of minute</strong>: plays a beep near the end of each minute.</li>
-  <li><strong>Speak seconds</strong>: announces the current seconds count.</li>
-</ul>
+1. Press `NVDA+Windows+Backspace` to open Minuter settings.
+2. Enable one or more cue options.
+3. Close settings and confirm cues are audible.
 
-<h2>Sound files</h2>
-<p>
-Minuter ships with sound samples in the <code>sounds</code> folder (for example <code>tick.wav</code> and <code>minute.wav</code>).
-If you replace those files inside the add-on package, your custom sounds will be used.
-</p>
+## Keyboard Shortcut
 
-<h2>Troubleshooting</h2>
-<ul>
-  <li>If you do not hear any cues, open settings and ensure at least one option is enabled.</li>
-  <li>If cues stop after changing audio devices, toggle an option off and on again to restart audio.</li>
-</ul>
+| Shortcut | Action |
+| --- | --- |
+| `NVDA+Windows+Backspace` | Open Minuter settings |
 
-</body>
-</html>
+## Main Options
+
+- Tick each second
+- Low beep each second
+- Ding each minute
+- Beep at end of minute
+- Speak seconds
+
+## Sound Customization
+
+- Minuter uses files in its `sounds` folder (for example `tick.wav`, `minute.wav`).
+- Replacing those files in the add-on package changes cue sounds.
+
+## Full Documentation
+
+- Full help: [`source/doc/en/readme.html`](source/doc/en/readme.html)
+
+## Source Code
+
+- Extracted source for this build: [`source/`](source/)
+- Main plugin: [`source/globalPlugins/minuter.py`](source/globalPlugins/minuter.py)
 
 ## Install
 
-1. Download the `.nvda-addon` file from the Releases page.
-2. In NVDA, open the Add-on Manager and choose Install.
-3. Select the `.nvda-addon` file and restart NVDA when prompted.
-
+1. Download the `.nvda-addon` file from Releases.
+2. In NVDA, open Add-on Manager and choose Install.
+3. Select the file and restart NVDA when prompted.
