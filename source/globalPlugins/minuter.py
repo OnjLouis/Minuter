@@ -7,7 +7,6 @@ import os
 import time
 import threading
 import wave
-import audioop
 from dataclasses import dataclass
 from typing import Optional, List, Tuple
 
@@ -21,6 +20,10 @@ import speech
 import tones
 
 from scriptHandler import script
+try:
+	from ._onjGithubUpdater import GitHubReleaseUpdater
+except Exception:
+	GitHubReleaseUpdater = None
 
 addonHandler.initTranslation()
 
@@ -33,6 +36,54 @@ try:
 	import nvwave
 except Exception:
 	nvwave = None
+
+try:
+	import audioop
+except ModuleNotFoundError:
+	class _AudioopFallback:
+		@staticmethod
+		def lin2lin(pcm: bytes, src_width: int, dst_width: int) -> bytes:
+			if dst_width != 2:
+				raise ValueError("Minuter fallback only supports 16-bit output")
+			if src_width == 2:
+				return pcm
+			out = bytearray()
+			for i in range(0, len(pcm) - (len(pcm) % src_width), src_width):
+				sample = int.from_bytes(pcm[i:i + src_width], "little", signed=(src_width != 1))
+				if src_width == 1:
+					sample -= 128
+					sample <<= 8
+				elif src_width > 2:
+					sample >>= 8 * (src_width - 2)
+				out.extend(max(-32768, min(32767, sample)).to_bytes(2, "little", signed=True))
+			return bytes(out)
+
+		@staticmethod
+		def mul(pcm: bytes, width: int, factor: float) -> bytes:
+			if width != 2:
+				raise ValueError("Minuter fallback only supports 16-bit samples")
+			out = bytearray()
+			for i in range(0, len(pcm) - (len(pcm) % 2), 2):
+				sample = int.from_bytes(pcm[i:i + 2], "little", signed=True)
+				sample = max(-32768, min(32767, int(sample * factor)))
+				out.extend(sample.to_bytes(2, "little", signed=True))
+			return bytes(out)
+
+		@staticmethod
+		def add(left: bytes, right: bytes, width: int) -> bytes:
+			if width != 2:
+				raise ValueError("Minuter fallback only supports 16-bit samples")
+			size = min(len(left), len(right))
+			out = bytearray()
+			for i in range(0, size - (size % 2), 2):
+				a = int.from_bytes(left[i:i + 2], "little", signed=True)
+				b = int.from_bytes(right[i:i + 2], "little", signed=True)
+				out.extend(max(-32768, min(32767, a + b)).to_bytes(2, "little", signed=True))
+			if len(left) > size:
+				out.extend(left[size:])
+			return bytes(out)
+
+	audioop = _AudioopFallback()
 
 
 _CONF_SECTION = "minuter"
@@ -424,6 +475,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self._worker: Optional[_SecondWorker] = None
 		self._mixer: Optional[_AudioMixer] = None
 		self._dialog: Optional[_SettingsDialog] = None
+		self._updater = None
+		if GitHubReleaseUpdater:
+			self._updater = GitHubReleaseUpdater("Minuter", "Minuter", "OnjLouis", "Minuter")
+			self._updater.start()
 
 		self._ensureWorkersRunning()
 
@@ -438,6 +493,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			if self._mixer:
 				self._mixer.stop()
 				self._mixer = None
+		except Exception:
+			pass
+		try:
+			if self._updater:
+				self._updater.stop()
 		except Exception:
 			pass
 		return super().terminate()
@@ -538,3 +598,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 					pass
 
 		wx.CallAfter(_show)
+
+	@script(description=_("Check for Minuter updates"))
+	def script_checkForMinuterUpdate(self, gesture):
+		if self._updater and wx is not None:
+			wx.CallAfter(self._updater.checkNow, True)
+		else:
+			queueHandler.queueFunction(queueHandler.eventQueue, speech.speakMessage, _("Updater is not available"))
