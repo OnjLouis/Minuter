@@ -20,10 +20,6 @@ import speech
 import tones
 
 from scriptHandler import script
-try:
-	from ._onjGithubUpdater import GitHubReleaseUpdater
-except Exception:
-	GitHubReleaseUpdater = None
 
 addonHandler.initTranslation()
 
@@ -475,10 +471,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self._worker: Optional[_SecondWorker] = None
 		self._mixer: Optional[_AudioMixer] = None
 		self._dialog: Optional[_SettingsDialog] = None
-		self._updater = None
-		if GitHubReleaseUpdater:
-			self._updater = GitHubReleaseUpdater("Minuter", "Minuter", "OnjLouis", "Minuter")
-			self._updater.start()
 
 		self._ensureWorkersRunning()
 
@@ -493,11 +485,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			if self._mixer:
 				self._mixer.stop()
 				self._mixer = None
-		except Exception:
-			pass
-		try:
-			if self._updater:
-				self._updater.stop()
 		except Exception:
 			pass
 		return super().terminate()
@@ -598,10 +585,3 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 					pass
 
 		wx.CallAfter(_show)
-
-	@script(description=_("Check for Minuter updates"))
-	def script_checkForMinuterUpdate(self, gesture):
-		if self._updater and wx is not None:
-			wx.CallAfter(self._updater.checkNow, True)
-		else:
-			queueHandler.queueFunction(queueHandler.eventQueue, speech.speakMessage, _("Updater is not available"))
