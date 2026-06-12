@@ -359,6 +359,8 @@ class _SettingsDialog(wx.Dialog):
 		self.chkWarn = wx.CheckBox(panel, label=_("&Warning beeps at 55–59 (1 kHz)"))
 		self.chkSpeak = wx.CheckBox(panel, label=_("&Speak seconds"))
 		self.chkMinute = wx.CheckBox(panel, label=_("&Ding at the top of each minute"))
+		self.enableAllButton = wx.Button(panel, label=_("&Enable all"))
+		self.disableAllButton = wx.Button(panel, label=_("&Disable all"))
 
 		c = config.conf[_CONF_SECTION]
 		self.chkTick.SetValue(bool(c["tickEachSecond"]))
@@ -380,10 +382,15 @@ class _SettingsDialog(wx.Dialog):
 		mainSizer.Add(secondsSizer, flag=wx.EXPAND | wx.ALL, border=8)
 		mainSizer.Add(minuteSizer, flag=wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, border=8)
 
+		toggleRow = wx.BoxSizer(wx.HORIZONTAL)
+		toggleRow.Add(self.enableAllButton, flag=wx.ALL, border=6)
+		toggleRow.Add(self.disableAllButton, flag=wx.ALL, border=6)
+		mainSizer.Add(toggleRow, flag=wx.LEFT | wx.RIGHT | wx.BOTTOM, border=8)
+
 		# IMPORTANT: button must have `panel` as parent (not the dialog),
 		# otherwise wx asserts when panel owns the sizer.
 		btnRow = wx.BoxSizer(wx.HORIZONTAL)
-		self.okButton = wx.Button(panel, wx.ID_OK, label=_("OK"))
+		self.okButton = wx.Button(panel, wx.ID_OK, label=_("Close"))
 		btnRow.AddStretchSpacer(1)
 		btnRow.Add(self.okButton, flag=wx.ALL, border=6)
 		mainSizer.Add(btnRow, flag=wx.EXPAND | wx.LEFT | wx.RIGHT | wx.BOTTOM, border=8)
@@ -392,6 +399,8 @@ class _SettingsDialog(wx.Dialog):
 		mainSizer.Fit(self)
 
 		self.okButton.Bind(wx.EVT_BUTTON, self.onOk)
+		self.enableAllButton.Bind(wx.EVT_BUTTON, self.onEnableAll)
+		self.disableAllButton.Bind(wx.EVT_BUTTON, self.onDisableAll)
 
 		self.Bind(wx.EVT_CHAR_HOOK, self.onCharHook)
 		self.Bind(wx.EVT_SHOW, self.onShow)
@@ -436,7 +445,24 @@ class _SettingsDialog(wx.Dialog):
 			except Exception:
 				pass
 
+	def _setAllCues(self, enabled: bool) -> None:
+		for chk in (self.chkTick, self.chkBeepLow, self.chkWarn, self.chkSpeak, self.chkMinute):
+			chk.SetValue(enabled)
+		self._saveSettings()
+
+	def onEnableAll(self, evt):
+		self._setAllCues(True)
+		evt.Skip()
+
+	def onDisableAll(self, evt):
+		self._setAllCues(False)
+		evt.Skip()
+
 	def onToggle(self, evt):
+		self._saveSettings()
+		evt.Skip()
+
+	def _saveSettings(self) -> None:
 		c = config.conf[_CONF_SECTION]
 		c["tickEachSecond"] = self.chkTick.GetValue()
 		c["beepEachSecondLow"] = self.chkBeepLow.GetValue()
@@ -445,7 +471,6 @@ class _SettingsDialog(wx.Dialog):
 		c["speakSeconds"] = self.chkSpeak.GetValue()
 		config.conf.save()
 		self._plugin._ensureWorkersRunning()
-		evt.Skip()
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):

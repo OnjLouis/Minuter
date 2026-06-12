@@ -8,6 +8,10 @@ Minuter provides optional time cues while you work: second ticks/beeps, minute c
 2. Enable one or more cue options.
 3. Close settings and confirm cues are audible.
 
+## Changes
+
+- 1.0.2: Adds Enable all and Disable all buttons, renames OK to Close, and removes the old GitHub updater for NVDA Add-on Store distribution.
+
 ## Keyboard Shortcut
 
 | Shortcut | Action |
@@ -21,6 +25,8 @@ Minuter provides optional time cues while you work: second ticks/beeps, minute c
 - Ding each minute
 - Beep at end of minute
 - Speak seconds
+- Enable all
+- Disable all
 
 ## Sound Customization
 
